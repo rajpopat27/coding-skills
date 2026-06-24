@@ -29,6 +29,6 @@ Keep `SKILL.md` focused on the essential workflow. Put detailed reference materi
 
 ## Skills
 
-- `skills/golang-coding/` - Full Go coding and review skill based on the Uber Go Style Guide, with concrete bad/good examples in `SKILL.md` and source split references under `references/src/`.
+- `skills/uber-go-style/` - Go coding and review skill based on the Uber Go Style Guide, with a quick checklist plus concrete bad/good examples in `SKILL.md`.
 
 `external/uber-go-guide/` contains a vendored copy of the Uber Go Style Guide from `https://github.com/uber-go/guide`.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Uber Go Style"
+  short_description: "Go style guide with examples"
+  default_prompt: "Use $uber-go-style to write or review Go code using the Uber Go Style Guide."

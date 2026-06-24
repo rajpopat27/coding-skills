@@ -1,11 +1,11 @@
 ---
-name: golang-coding
-description: Full Go coding best-practice skill based on the Uber Go Style Guide. Use when writing, refactoring, debugging, or reviewing Go code; deciding what is good or bad Go style; designing Go packages, APIs, interfaces, errors, concurrency, tests, data structures, initialization, globals, performance-sensitive paths, naming, imports, linting, or style conventions. Includes concrete bad/good examples and rationale.
+name: uber-go-style
+description: Uber Go style guide. Use when writing, reviewing, or modifying Go code to ensure it follows best practices for style, performance, error handling, concurrency, naming conventions, tests, package design, APIs, interfaces, slices, maps, initialization, globals, linting, and idiomatic Go patterns.
 ---
 
-# Golang Coding Skill
+# Uber Go Style
 
-Use this skill as a practical Go coding and code-review guide. The detailed guidance below is adapted from the Uber Go Style Guide and intentionally keeps the concrete rules, rationale, and Bad/Good examples in the main skill so an AI agent can apply them without treating the skill as a directory index.
+When writing or modifying Go code, follow these rules based on the Uber Go Style Guide. Use the checklist first for fast decisions, then use the full guide below for detailed rationale and Bad/Good examples.
 
 When working on a Go repository:
 
@@ -14,6 +14,196 @@ When working on a Go repository:
 3. Apply this guide to improve correctness, API clarity, error handling, concurrency safety, ownership boundaries, tests, readability, and performance.
 4. Use the Bad/Good examples as concrete rewrite patterns, not just style suggestions.
 5. Run `gofmt` or `go fmt`; use `goimports` when imports change and it is available. Run focused tests first, then broader tests when the change touches shared behavior.
+
+## Guidelines
+
+### Interfaces
+
+- Never use pointers to interfaces; pass interfaces as values.
+- Verify interface compliance at compile time: `var _ http.Handler = (*Handler)(nil)`.
+
+### Receivers
+
+- Value receivers can be called on pointers and values.
+- Pointer receivers can be called only on pointers or addressable values.
+- Use pointer receivers for mutation, large structs, or consistency across the method set.
+
+### Mutexes
+
+- Zero-value `sync.Mutex` and `sync.RWMutex` are valid; do not use `new(sync.Mutex)`.
+- Do not embed mutexes in structs; use a named field such as `mu sync.Mutex`.
+
+### Slices and Maps at Boundaries
+
+- Copy slices and maps received as arguments if you store them.
+- Copy slices and maps before returning them if they expose internal state.
+
+### Defer
+
+- Use `defer` to clean up resources such as files and locks. The overhead is usually negligible.
+
+### Channels
+
+- Prefer unbuffered channels or channels with size one.
+- Any other channel size requires strong justification.
+
+### Enums
+
+- Start enums at one with `iota + 1` unless zero is a meaningful default.
+
+### Time
+
+- Use `time.Time` for instants and `time.Duration` for periods.
+- Include units in field names when `time.Duration` cannot be used, such as `IntervalMillis`.
+- Use RFC 3339 for timestamp strings.
+
+### Errors
+
+- Use `errors.New` for static errors and `fmt.Errorf` for dynamic errors.
+- Export error vars with an `Err` prefix for caller matching with `errors.Is`.
+- Use custom error types with an `Error` suffix for caller matching with `errors.As`.
+- Wrap errors with `%w` when callers should be able to match the cause.
+- Use `%v` when the wrapped error should be opaque.
+- Avoid vague `failed to` prefixes; prefer context like `new store: %w`.
+- Prefix unexported error vars with `err`.
+- Handle errors once: either wrap and return, or log and degrade gracefully; do not log and return the same error.
+
+### Type Assertions
+
+- Always use the comma-ok form: `t, ok := i.(string)`.
+
+### Panics
+
+- Do not panic in production code; return errors instead.
+- In tests, use `t.Fatal` instead of `panic`.
+- Panics are acceptable for clear program initialization helpers such as `template.Must(...)`.
+
+### Atomics
+
+- Prefer typed atomic wrappers such as `go.uber.org/atomic` over raw `sync/atomic` when the project allows that dependency.
+
+### Mutable Globals
+
+- Avoid mutable globals; use dependency injection instead.
+
+### Embedding Types
+
+- Do not embed types in public structs.
+- Delegate methods explicitly.
+- Embedding leaks implementation details and makes type evolution harder.
+
+### Built-In Names
+
+- Never shadow predeclared identifiers such as `error`, `string`, `len`, `cap`, `new`, or `copy`.
+
+### init
+
+- Avoid `init`.
+- If `init` is unavoidable, keep it deterministic and avoid I/O or global state mutation.
+- Prefer explicit initialization in `main`, constructors, or package variables such as `var _defaultFoo = defaultFoo()`.
+
+### Exit
+
+- Call `os.Exit` or `log.Fatal` only in `main`.
+- All other functions should return errors.
+- Prefer a single `run() error` function called from `main` for testability.
+
+### Field Tags
+
+- Always use field tags in marshaled structs, such as `json:"price"`.
+
+### Goroutines
+
+- Do not fire-and-forget goroutines.
+- Every goroutine must have a way to stop and be waited on.
+- Use `sync.WaitGroup` for multiple goroutines and a done channel for simple single-goroutine lifecycles.
+- Do not start goroutines in `init`.
+- Expose objects with `Shutdown` or `Close` methods when they own background work.
+
+### Performance
+
+- Use `strconv` over `fmt` for primitive-to-string conversion.
+- Do not repeatedly convert fixed strings to `[]byte`; do it once.
+- Specify capacity for slices with `make([]T, 0, size)` and maps with `make(map[K]V, size)` when size is known.
+
+### Formatting and Style
+
+- Treat 99 characters as a soft line length limit.
+- Be consistent above all else.
+- Group similar `const`, `var`, and `type` declarations only when the items are related.
+- Use two import groups: standard library, then everything else, separated by a blank line.
+
+### Naming
+
+- Package names should be lowercase, short, singular when natural, and without underscores.
+- Avoid package names like `common`, `util`, `shared`, or `lib`.
+- Function names use `MixedCaps`; test functions may use underscores for grouping.
+- Use import aliases only when the package name does not match the last path element or there is a conflict.
+- Prefix unexported globals with `_`, except error vars which use the `err` prefix.
+
+### Functions and Control Flow
+
+- Sort functions by rough call order and group methods by receiver.
+- Put exported functions first after related structs, constants, and variables.
+- Put `NewXYZ` constructors right after the type definition.
+- Put utility functions near the end of the file.
+- Reduce nesting by handling errors and special cases first, then returning early.
+- Eliminate unnecessary `else` after return, break, continue, or panic.
+- Reduce variable scope with patterns such as `if err := doThing(); err != nil`.
+
+### Variables
+
+- Use `:=` for local variables with explicit values.
+- Use `var` for zero-value declarations and empty slices.
+- `nil` is a valid slice; return `nil` instead of `[]int{}` when there is no semantic need for an allocated empty slice.
+- Check slice emptiness with `len(s) == 0`.
+
+### Parameters
+
+- Avoid naked boolean parameters.
+- Use C-style comments, custom types, or option structs for clarity.
+
+### Strings
+
+- Use raw string literals to avoid escaping when they improve readability.
+
+### Structs
+
+- Use field names in struct initialization.
+- Omit zero-value fields unless they provide meaningful context.
+- Use `var s MyStruct` for zero-value structs, not `s := MyStruct{}`.
+- Use `&T{Name: "bar"}` instead of `new(T)` for struct references with fields.
+- Place embedded types at the top of the field list, separated by a blank line.
+
+### Maps
+
+- Use `make(map[K]V)` for empty or programmatically populated maps.
+- Use map literals for fixed sets.
+- Provide capacity hints when size is known.
+
+### Printf
+
+- Declare format strings as constants for `go vet` analysis.
+- Name printf-style functions with an `f` suffix, such as `Wrapf`, not `Wrap`.
+
+### Test Tables
+
+- Use table-driven tests with subtests for repetitive test logic.
+- Name the slice `tests`, each case `tt`, and use `give` or `want` prefixes.
+- Avoid complex conditional logic in table tests; split into separate test functions instead.
+- For parallel table tests, ensure loop variables are scoped correctly.
+
+### Functional Options
+
+- Use the functional options pattern for constructors with three or more parameters.
+- Implement options with an `Option` interface and unexported options struct.
+- Prefer concrete option types over closures for debuggability and testability.
+
+### Linting
+
+- Run at minimum: `errcheck`, `goimports`, `revive`, `govet`, and `staticcheck`.
+- Use `golangci-lint` as the lint runner.
+- Lint consistently across the entire codebase.
 
 The split files under `references/src/` remain available as source material, but the main rules and examples are included below.
 

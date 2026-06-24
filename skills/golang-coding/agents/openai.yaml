@@ -1,4 +1,4 @@
 interface:
   display_name: "Golang Coding"
-  short_description: "High-level Go best practices"
+  short_description: "Full Go style guide with examples"
   default_prompt: "Use $golang-coding to write or review Go code using the Uber Go Style Guide."

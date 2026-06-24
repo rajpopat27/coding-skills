@@ -12,6 +12,8 @@ skills/
     scripts/
     references/
     assets/
+external/
+  uber-go-guide/
 ```
 
 Each skill folder should contain a `SKILL.md` with YAML frontmatter:
@@ -24,3 +26,5 @@ description: What the skill does and when Codex should use it.
 ```
 
 Keep `SKILL.md` focused on the essential workflow. Put detailed reference material in `references/`, reusable commands in `scripts/`, and output templates or media in `assets/`.
+
+`external/uber-go-guide/` contains a vendored copy of the Uber Go Style Guide from `https://github.com/uber-go/guide`.

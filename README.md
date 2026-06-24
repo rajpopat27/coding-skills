@@ -27,4 +27,8 @@ description: What the skill does and when Codex should use it.
 
 Keep `SKILL.md` focused on the essential workflow. Put detailed reference material in `references/`, reusable commands in `scripts/`, and output templates or media in `assets/`.
 
+## Skills
+
+- `skills/golang-coding/` - Go coding and review guidance based on the Uber Go Style Guide, with split references under `references/src/` so agents load only the relevant docs.
+
 `external/uber-go-guide/` contains a vendored copy of the Uber Go Style Guide from `https://github.com/uber-go/guide`.

@@ -30,10 +30,9 @@ When guidance conflicts, prefer this order:
 6. Performance improvements with clear evidence or obvious low cost.
 7. Cosmetic style cleanup only when it helps the current change.
 
-Do not create review churn. Fix code near the task. Leave unrelated large rewrites alone unless the user asks for a cleanup.
-## Fast Review Checklist
+Do not create review churn. Fix code near the task. Leave unrelated large rewrites alone.
 
-Use this checklist when reviewing or touching Go code:
+## Fast Review Checklist
 
 - Interfaces are values, not `*interface`.
 - Important interface contracts are asserted with `var _ Interface = (*Type)(nil)`.
@@ -49,6 +48,7 @@ Use this checklist when reviewing or touching Go code:
 - Hot paths avoid obvious allocation waste such as repeated conversions and missing capacity.
 
 ## Interfaces and APIs
+
 Good Go APIs are small, explicit, and easy for callers to evolve with.
 
 Use interfaces at the consumer boundary. Define an interface where it is used unless it is a stable public contract. Avoid exporting abstractions before there are real callers.
